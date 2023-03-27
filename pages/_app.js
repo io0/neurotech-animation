@@ -2,7 +2,7 @@ import "../styles.css";
 import { useState, useRef } from "react";
 import { gsap } from "gsap-trial";
 import { ScrollTrigger } from "gsap-trial/dist/ScrollTrigger";
-import { ScrollSmoother } from "gsap-trial/dist//ScrollSmoother";
+// import { ScrollSmoother } from "gsap-trial/dist//ScrollSmoother";
 import { SmootherContext } from "../SmootherContext";
 import { useIsomorphicLayoutEffect } from "../useIsomorphicLayoutEffect";
 
@@ -10,17 +10,17 @@ export default function MyApp({ Component, pageProps }) {
   let [smoother, setSmoother] = useState();
   const videoRef = useRef(null);
   useIsomorphicLayoutEffect(() => {
-    gsap.registerPlugin(ScrollTrigger, ScrollSmoother);
+    gsap.registerPlugin(ScrollTrigger);
 
-    let smoother = ScrollSmoother.create({
-      smooth: 1,
-      normalizeScroll: true, // prevents address bar from showing/hiding on most devices, solves various other browser inconsistencies
-      ignoreMobileResize: true, // skips ScrollTrigger.refresh() on mobile resizes from address bar showing/hiding
-      effects: true,
-      preventDefault: true,
-    });
+    // let smoother = ScrollSmoother.create({
+    //   smooth: 1,
+    //   normalizeScroll: true, // prevents address bar from showing/hiding on most devices, solves various other browser inconsistencies
+    //   ignoreMobileResize: true, // skips ScrollTrigger.refresh() on mobile resizes from address bar showing/hiding
+    //   effects: true,
+    //   preventDefault: true,
+    // });
 
-    setSmoother(smoother);
+    // setSmoother(smoother);
     if (videoRef.current) {
       const coolVideo = videoRef.current;
 
@@ -61,11 +61,11 @@ export default function MyApp({ Component, pageProps }) {
           Your browser does not support HTML video.
         </video>
       </div>
-      <SmootherContext.Provider value={smoother}>
+      {/* <SmootherContext.Provider value={smoother}>
         <div id="smooth-wrapper">
-          <div id="smooth-content">{/* <Component {...pageProps} /> */}</div>
+          <div id="smooth-content"></div>
         </div>
-      </SmootherContext.Provider>
+      </SmootherContext.Provider> */}
       <footer>
         <a href="https://greensock.com/scrollsmoother">
           <img
