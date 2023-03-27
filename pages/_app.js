@@ -66,7 +66,7 @@ export default function MyApp({ Component, pageProps }) {
           <div id="smooth-content"></div>
         </div>
       </SmootherContext.Provider> */}
-      <footer>
+      {/* <footer>
         <a href="https://greensock.com/scrollsmoother">
           <img
             className="greensock-icon"
@@ -76,7 +76,7 @@ export default function MyApp({ Component, pageProps }) {
             alt=""
           />
         </a>
-      </footer>
+      </footer> */}
     </div>
   );
 }
