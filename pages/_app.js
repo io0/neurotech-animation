@@ -36,7 +36,7 @@ export default function MyApp({ Component, pageProps }) {
 
       tl.to(coolVideo, { currentTime: coolVideo.duration });
     }
-  }, []);
+  }, [videoRef]);
 
   return (
     <div>
