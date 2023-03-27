@@ -34,7 +34,10 @@ export default function MyApp({ Component, pageProps }) {
         },
       });
 
-      tl.to(coolVideo, { currentTime: coolVideo.duration });
+      // wait until video metadata is loaded, so we can grab the proper duration before adding the onscroll animation. Might need to add a loader for loonng videos
+      coolVideo.onloadedmetadata = function () {
+        tl.to(coolVideo, { currentTime: coolVideo.duration });
+      };
     }
   }, [videoRef]);
 
