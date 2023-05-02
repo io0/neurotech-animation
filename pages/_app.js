@@ -1,42 +1,78 @@
 import "../styles.css";
 import { useState, useRef } from "react";
-import { gsap } from "gsap-trial";
-import { ScrollTrigger } from "gsap-trial/dist/ScrollTrigger";
-// import { ScrollSmoother } from "gsap-trial/dist//ScrollSmoother";
-import { SmootherContext } from "../SmootherContext";
 import { useIsomorphicLayoutEffect } from "../useIsomorphicLayoutEffect";
+
+function scrollSmoother(options) {
+  const defaults = {
+    smooth: 1,
+    normalizeScroll: true,
+    ignoreMobileResize: true,
+    effects: true,
+    preventDefault: true,
+  };
+
+  const settings = { ...defaults, ...options };
+
+  let scrollY = 0;
+  let lastScrollY = 0;
+  let contentEl;
+
+  const onScroll = () => {
+    scrollY = window.scrollY;
+    if (settings.effects) {
+      contentEl.style.transform = `translate3d(0, ${-scrollY}px, 0)`;
+    }
+    lastScrollY = scrollY;
+  };
+
+  const init = (wrapperId, contentId) => {
+    contentEl = document.getElementById(contentId);
+    document.getElementById(wrapperId).style.overflow = "hidden";
+    window.addEventListener("scroll", onScroll, { passive: true });
+  };
+
+  const destroy = () => {
+    window.removeEventListener("scroll", onScroll, { passive: true });
+  };
+
+  return { init, destroy };
+}
 
 export default function MyApp({ Component, pageProps }) {
   let [smoother, setSmoother] = useState();
   const videoRef = useRef(null);
+  const videoUrl = "https://neurotech2.s3.amazonaws.com/neuron.mp4";
+
   useIsomorphicLayoutEffect(() => {
-    gsap.registerPlugin(ScrollTrigger);
+    let mySmoother = scrollSmoother();
+    mySmoother.init("smooth-wrapper", "smooth-content");
+    setSmoother(mySmoother);
 
-    // let smoother = ScrollSmoother.create({
-    //   smooth: 1,
-    //   normalizeScroll: true, // prevents address bar from showing/hiding on most devices, solves various other browser inconsistencies
-    //   ignoreMobileResize: true, // skips ScrollTrigger.refresh() on mobile resizes from address bar showing/hiding
-    //   effects: true,
-    //   preventDefault: true,
-    // });
-
-    // setSmoother(smoother);
     if (videoRef.current) {
       const coolVideo = videoRef.current;
 
-      let tl = gsap.timeline({
-        scrollTrigger: {
-          trigger: "video",
-          start: "top top",
-          end: "bottom+=200% bottom",
-          scrub: true,
-          markers: true,
-        },
+      prefetch_file(videoUrl).then((blob_url) => {
+        coolVideo.src = blob_url;
       });
 
-      // wait until video metadata is loaded, so we can grab the proper duration before adding the onscroll animation. Might need to add a loader for loonng videos
-      coolVideo.onloadedmetadata = function () {
-        tl.to(coolVideo, { currentTime: coolVideo.duration });
+      // Custom implementation of the video timeline
+      const onScroll = () => {
+        const start = 0;
+        const end = window.innerHeight * 2;
+        const progress = Math.min(
+          Math.max(window.scrollY - start, 0) / (end - start),
+          1
+        );
+
+        if (isFinite(progress) && isFinite(coolVideo.duration)) {
+          coolVideo.currentTime = progress * coolVideo.duration;
+        }
+      };
+
+      window.addEventListener("scroll", onScroll, { passive: true });
+
+      return () => {
+        window.removeEventListener("scroll", onScroll, { passive: true });
       };
     }
   }, [videoRef]);
@@ -51,35 +87,40 @@ export default function MyApp({ Component, pageProps }) {
           // autoPlay
           muted
           ref={videoRef}
-          preload="preload"
+          preload="auto"
         >
-          <source
-            // src="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4"
-            // src="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"
-            // src="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WhatCarCanYouGetForAGrand.mp4"
-            src="/output.mp4"
-            type="video/mp4"
-          />
-          {/* <source src="mov_bbb.ogg" type="video/ogg" /> */}
+          {/* <source src="/output.mp4" type="video/mp4" /> */}
+          <source src={videoUrl} type="video/mp4" />
           Your browser does not support HTML video.
         </video>
       </div>
-      {/* <SmootherContext.Provider value={smoother}>
-        <div id="smooth-wrapper">
-          <div id="smooth-content"></div>
-        </div>
-      </SmootherContext.Provider> */}
-      {/* <footer>
-        <a href="https://greensock.com/scrollsmoother">
-          <img
-            className="greensock-icon"
-            src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/16327/scroll-smoother-logo-light.svg"
-            width="220"
-            height="70"
-            alt=""
-          />
-        </a>
-      </footer> */}
+      <div id="smooth-wrapper">
+        <div id="smooth-content">{/* <Component {...pageProps} /> */}</div>
+      </div>
     </div>
   );
+}
+
+function prefetch_file(url) {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open("GET", url, true);
+    xhr.responseType = "blob";
+
+    xhr.addEventListener("load", () => {
+      if (xhr.status === 200) {
+        const URL = window.URL || window.webkitURL;
+        const blob_url = URL.createObjectURL(xhr.response);
+        resolve(blob_url);
+      } else {
+        reject(xhr.statusText);
+      }
+    });
+
+    xhr.addEventListener("error", () => {
+      reject("Network error");
+    });
+
+    xhr.send();
+  });
 }
