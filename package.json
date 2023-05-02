@@ -8,13 +8,12 @@
     "post-update": "yarn upgrade --latest"
   },
   "dependencies": {
-    "gsap-trial": "3.11.3",
     "next": "latest",
     "react": "^16.14.0",
     "react-dom": "^16.14.0"
   },
   "engines": {
-    "node": "16.x"
+    "node": "18.x"
   },
   "license": "MIT",
   "keywords": [
